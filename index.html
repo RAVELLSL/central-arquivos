@@ -6,9 +6,7 @@
     <title>Prof. Ravell | Central de Arquivos</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
@@ -33,6 +31,14 @@
                     }
                 }
             }
+        }
+
+        // --- CORREÇÃO 1: Inicialização do Tema no Head (Evita Flash Bang) ---
+        // Verifica o tema antes do corpo da página carregar
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
         }
     </script>
 
@@ -74,6 +80,12 @@
 
         /* Accordion Rotate Animation */
         .rotate-180 { transform: rotate(180deg); }
+
+        /* --- CORREÇÃO 2: CSS Faltante Adicionado --- */
+        .mask-linear-fade {
+            -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+            mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col bg-gray-50 text-slate-800 dark:bg-[#0f172a] dark:text-slate-200 transition-colors duration-300 overflow-x-hidden">
@@ -141,10 +153,9 @@
     </header>
 
     <main class="flex-grow max-w-5xl mx-auto px-4 pb-20 w-full">
-        
         <div id="resourcesList" class="flex flex-col gap-2">
-            </div>
-        
+        </div>
+
         <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 opacity-60 text-center px-4">
             <div class="bg-slate-100 dark:bg-slate-800 p-4 rounded-full mb-4">
                 <i class="fa-solid fa-magnifying-glass text-3xl text-slate-400"></i>
@@ -178,20 +189,20 @@
                             <i class="fa-solid fa-circle-notch fa-spin text-3xl text-cyan-500"></i>
                         </div>
                         <div class="iframe-container h-full w-full z-10">
-                            <iframe id="previewIframe" src="" allow="autoplay; fullscreen"></iframe>
+                            <iframe id="previewIframe" src="" allow="autoplay; fullscreen" class="opacity-0 transition-opacity duration-500"></iframe>
                         </div>
                         <div id="errorOverlay" class="hidden absolute inset-0 z-20 bg-white dark:bg-slate-900 flex flex-col items-center justify-center text-center p-6">
                             <i class="fa-solid fa-triangle-exclamation text-4xl text-amber-500 mb-4"></i>
                             <p class="text-lg font-semibold text-slate-800 dark:text-white mb-2">Arquivo não disponível para visualização</p>
                             <p class="text-sm text-slate-500 dark:text-slate-400 max-w-md mb-6">O ID do arquivo parece incorreto ou as permissões de acesso não são públicas.</p>
-                            <a id="errorDownloadLink" href="#" target="_blank" class="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition">
+                            <a id="errorDownloadLink" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition">
                                 Tentar Download Direto
                             </a>
                         </div>
                     </div>
 
                     <div class="p-4 bg-gray-50 dark:bg-slate-800/30 border-t border-gray-200 dark:border-slate-700 flex justify-end flex-shrink-0">
-                        <a id="modalDownloadBtn" href="#" target="_blank" class="inline-flex justify-center items-center rounded-xl bg-cyan-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/30 hover:bg-cyan-500 transition gap-2">
+                        <a id="modalDownloadBtn" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex justify-center items-center rounded-xl bg-cyan-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/30 hover:bg-cyan-500 transition gap-2">
                             <i class="fa-solid fa-cloud-arrow-down"></i> 
                             <span>Baixar Arquivo</span>
                         </a>
@@ -202,9 +213,19 @@
     </div>
 
     <script>
-        // --- CONFIGURAÇÃO DE TEMA ---
+        // --- CONFIGURAÇÃO DE TEMA (Lógica de Ícone) ---
         const html = document.documentElement;
         const themeIcon = document.getElementById('themeIcon');
+
+        // Sincroniza o ícone com o estado atual do HTML (definido no HEAD)
+        function initThemeIcon() {
+            if (html.classList.contains('dark')) {
+                themeIcon.classList.replace('fa-moon', 'fa-sun');
+            } else {
+                themeIcon.classList.replace('fa-sun', 'fa-moon');
+            }
+        }
+        initThemeIcon();
 
         function toggleTheme() {
             if (html.classList.contains('dark')) {
@@ -218,14 +239,7 @@
             }
         }
 
-        if (localStorage.getItem('theme') === 'dark') {
-            html.classList.add('dark');
-            themeIcon.classList.replace('fa-moon', 'fa-sun');
-        } else {
-            html.classList.remove('dark');
-        }
-
-        // --- DADOS COMPLETOS ---
+        // --- DADOS COMPLETOS (INTEGRAIS) ---
         const resources = [
             // --- 1. Correntes Filosóficas (E-books) ---
             { id: 1, title: "Cyberpunk", category: "Correntes Filosóficas", type: "ebook", date: "2024", size: "2.0 MB", driveId: "1-69zSGw-CvKMXx0IAURSDzLgsUWZM1E7", description: "Alta tecnologia e baixa qualidade de vida: distopias e futuros." },
@@ -326,9 +340,14 @@
             applyLogic();
         }
 
+        // CORREÇÃO 4: Debounce para otimizar a busca
+        let debounceTimer;
         document.getElementById('searchInput').addEventListener('input', (e) => {
-            currentSearch = e.target.value.toLowerCase();
-            applyLogic();
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                currentSearch = e.target.value.toLowerCase();
+                applyLogic();
+            }, 300); // Aguarda 300ms após parar de digitar
         });
 
         function toggleExpand(type) {
@@ -346,6 +365,7 @@
 
         function createItemRow(item) {
             const style = getIconStyle(item.type);
+            // CORREÇÃO 3: Adicionado rel="noopener noreferrer" para segurança
             return `
                 <div class="group list-item-hover bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-4 md:p-0 md:h-20 flex flex-col md:grid md:grid-cols-12 gap-3 md:gap-4 items-start md:items-center shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden relative">
                     <div class="absolute left-0 top-0 bottom-0 w-1.5 ${style.colorClass.split(' ')[0].replace('/30','')} md:w-1"></div>
@@ -369,7 +389,7 @@
                         <button onclick="openPreview('${item.driveId}', '${item.title}')" class="flex-1 md:flex-none h-10 md:h-9 px-3 rounded-lg border border-gray-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 hover:text-cyan-600 dark:hover:text-cyan-400 transition flex items-center justify-center gap-2 text-sm font-medium">
                             <i class="fa-regular fa-eye"></i> <span class="md:hidden">Ver</span>
                         </button>
-                        <a href="https://drive.google.com/uc?export=download&id=${item.driveId}" target="_blank" class="flex-1 md:flex-none h-10 md:h-9 px-3 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white transition flex items-center justify-center gap-2 text-sm font-medium shadow-sm shadow-cyan-500/20">
+                        <a href="https://drive.google.com/uc?export=download&id=${item.driveId}" target="_blank" rel="noopener noreferrer" class="flex-1 md:flex-none h-10 md:h-9 px-3 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white transition flex items-center justify-center gap-2 text-sm font-medium shadow-sm shadow-cyan-500/20">
                             <i class="fa-solid fa-download"></i> <span class="md:hidden">Baixar</span>
                         </a>
                     </div>
@@ -382,11 +402,11 @@
             let hasResults = false;
 
             const filtered = resources.filter(item => {
+                // Filtro simples (Ebook ou Slide) - removido verificação de PDF que não existe
                 let matchesType = (currentFilter === 'all') ? true : item.type === currentFilter;
-                if (currentFilter === 'ebook' && item.type === 'pdf') matchesType = true;
-
+                
                 const matchesSearch = item.title.toLowerCase().includes(currentSearch) || 
-                                      item.description.toLowerCase().includes(currentSearch) ||
+                                      item.description.toLowerCase().includes(currentSearch) || 
                                       item.category.toLowerCase().includes(currentSearch);
                 return matchesType && matchesSearch;
             });
@@ -394,7 +414,7 @@
             // Lógica Principal de Exibição
             if (filtered.length > 0) {
                 // 1. Se estiver na busca (independente da aba), mostra lista plana
-                if(currentSearch !== '') {
+                if(currentSearch !== '') { 
                      renderFlatList(filtered);
                 } 
                 // 2. Se for "Todos" (sem busca)
@@ -458,15 +478,17 @@
             listContainer.appendChild(section);
             const container = section.querySelector('.flex-col');
 
-            // Sort categories ONLY if expanded
+            // Cria cópia para ordenar sem afetar array original
+            let itemsToShow = [...data];
+            
             if(isExpanded) {
-                data.sort((a, b) => (categoryOrder[a.category] || 99) - (categoryOrder[b.category] || 99));
+                itemsToShow.sort((a, b) => (categoryOrder[a.category] || 99) - (categoryOrder[b.category] || 99));
+            } else {
+                itemsToShow = itemsToShow.slice(0, 2);
             }
             
-            const dataToShow = isExpanded ? data : data.slice(0, 2);
-            
             let lastCategory = '';
-            dataToShow.forEach(item => {
+            itemsToShow.forEach(item => {
                 if (isExpanded && item.category !== lastCategory) {
                     const catHeader = document.createElement('div');
                     catHeader.className = 'mt-4 mb-2 text-sm font-bold text-slate-500 uppercase tracking-wide';
@@ -560,14 +582,20 @@
         const modalDownload = document.getElementById('modalDownloadBtn');
         const errorOverlay = document.getElementById('errorOverlay');
         const errorDownloadLink = document.getElementById('errorDownloadLink');
+        const loadingSpinner = document.getElementById('loadingSpinner');
 
         function openPreview(driveId, title) {
             modalTitle.innerText = title;
             errorOverlay.classList.add('hidden');
+            
+            // Reseta estado do iframe
             iframe.src = ''; 
+            iframe.classList.add('opacity-0'); // Esconde visualmente
+            loadingSpinner.classList.remove('hidden'); // Mostra spinner
 
             if(driveId.startsWith('FILE_ID_') || !driveId) {
                 errorOverlay.classList.remove('hidden');
+                loadingSpinner.classList.add('hidden');
                 errorDownloadLink.href = "#";
                 modalDownload.href = "#";
             } else {
@@ -575,6 +603,13 @@
                 const downloadUrl = `https://drive.google.com/uc?export=download&id=${driveId}`;
                 
                 iframe.src = previewUrl;
+                
+                // CORREÇÃO 5: Só mostra o iframe quando ele terminar de carregar
+                iframe.onload = function() {
+                    loadingSpinner.classList.add('hidden');
+                    iframe.classList.remove('opacity-0');
+                };
+
                 modalDownload.href = downloadUrl;
                 errorDownloadLink.href = downloadUrl;
             }
