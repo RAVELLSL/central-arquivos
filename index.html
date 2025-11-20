@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prof. Ravell | Central de Arquivos</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class', 
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        tech: {
+                            dark: '#0f172a',
+                            cardDark: '#1e293b',
+                            light: '#f8fafc',
+                            cardLight: '#ffffff',
+                            accent: '#38bdf8',
+                        }
+                    },
+                    screens: {
+                        'xs': '475px',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body, div, nav, button, input, span, p, h1, h2, h3, i {
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Iframe Container */
+        .iframe-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 75%; 
+        }
+        .iframe-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 0.5rem;
+            background-color: #f1f5f9; 
+        }
+        
+        .list-item-hover:hover { transform: translateY(-2px); }
+        @media (min-width: 768px) {
+            .list-item-hover:hover { transform: translateX(4px); }
+        }
+
+        /* Accordion Rotate Animation */
+        .rotate-180 { transform: rotate(180deg); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-gray-50 text-slate-800 dark:bg-[#0f172a] dark:text-slate-200 transition-colors duration-300 overflow-x-hidden">
+
+    <nav class="border-b border-gray-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/90 sticky top-0 z-40 backdrop-blur-md">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="bg-gradient-to-tr from-cyan-500 to-blue-600 p-2 rounded-lg shadow-lg shadow-cyan-500/20 flex-shrink-0">
+                        <i class="fa-solid fa-layer-group text-white text-sm md:text-base"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-lg md:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-400 dark:to-purple-400 leading-tight">
+                            Prof. Ravell
+                        </span>
+                        <span class="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide leading-none">
+                            Academy
+                        </span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 md:gap-4">
+                    <button onclick="toggleTheme()" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition focus:outline-none active:scale-95">
+                        <i id="themeIcon" class="fa-solid fa-moon text-lg md:text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="pt-6 md:pt-10 pb-4 md:pb-6 px-4">
+        <div class="max-w-5xl mx-auto">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6 mb-6 md:mb-8">
+                <div>
+                    <h1 class="text-2xl md:text-4xl font-bold text-slate-900 dark:text-white mb-1 md:mb-2">
+                        Central de Arquivos
+                    </h1>
+                    <p class="text-sm md:text-base text-slate-500 dark:text-slate-400 max-w-md">
+                        Materiais de aula organizados por tipo e temática.
+                    </p>
+                </div>
+                
+                <div class="relative w-full md:w-72 group mt-2 md:mt-0">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <i class="fa-solid fa-search text-slate-400 group-focus-within:text-cyan-500 transition"></i>
+                    </div>
+                    <input type="text" id="searchInput" 
+                        class="block w-full p-3 pl-10 text-sm text-slate-900 dark:text-white bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none shadow-sm transition appearance-none" 
+                        placeholder="Buscar material...">
+                </div>
+            </div>
+
+            <div class="flex overflow-x-auto pb-1 gap-2 md:gap-3 border-b border-gray-200 dark:border-slate-800 no-scrollbar mask-linear-fade" id="filterContainer">
+                <button onclick="filterResources('all')" class="filter-btn active-filter flex-shrink-0 px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 border-cyan-500 text-cyan-600 dark:text-cyan-400 transition-colors whitespace-nowrap">
+                    <i class="fa-solid fa-layer-group mr-2 md:hidden"></i>Todos
+                </button>
+                <button onclick="filterResources('ebook')" class="filter-btn flex-shrink-0 px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 border-transparent hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors whitespace-nowrap">
+                    <i class="fa-solid fa-book mr-2 md:hidden"></i>e-Books
+                </button>
+                <button onclick="filterResources('slide')" class="filter-btn flex-shrink-0 px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 border-transparent hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors whitespace-nowrap">
+                    <i class="fa-solid fa-tv mr-2 md:hidden"></i>Slides
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-5xl mx-auto px-4 pb-20 w-full">
+        
+        <div id="resourcesList" class="flex flex-col gap-2">
+            </div>
+        
+        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 opacity-60 text-center px-4">
+            <div class="bg-slate-100 dark:bg-slate-800 p-4 rounded-full mb-4">
+                <i class="fa-solid fa-magnifying-glass text-3xl text-slate-400"></i>
+            </div>
+            <p class="text-slate-600 dark:text-slate-400 font-medium">Nenhum arquivo encontrado</p>
+        </div>
+    </main>
+
+    <div id="previewModal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-slate-900/70 dark:bg-black/90 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-2 md:p-4 text-center">
+                
+                <div class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-slate-900 text-left shadow-2xl transition-all w-full max-w-5xl flex flex-col max-h-[95vh]">
+                    
+                    <div class="bg-gray-50 dark:bg-slate-800/50 px-4 py-3 flex justify-between items-center border-b border-gray-200 dark:border-slate-700 flex-shrink-0">
+                        <h3 class="text-base font-semibold leading-6 text-slate-900 dark:text-white flex items-center gap-2 truncate pr-4" id="modal-title">
+                            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 flex-shrink-0">
+                                <i class="fa-brands fa-google-drive"></i>
+                            </span>
+                            <span class="truncate" id="modalFileName">Visualização</span>
+                        </h3>
+                        <button type="button" onclick="closeModal()" class="p-2 text-slate-400 hover:text-slate-500 dark:hover:text-slate-300 outline-none rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 transition">
+                            <i class="fa-solid fa-xmark text-xl"></i>
+                        </button>
+                    </div>
+
+                    <div class="p-0 bg-black flex-grow overflow-hidden relative flex items-center justify-center bg-gray-100 dark:bg-slate-800">
+                        <div id="loadingSpinner" class="absolute inset-0 flex items-center justify-center z-0">
+                            <i class="fa-solid fa-circle-notch fa-spin text-3xl text-cyan-500"></i>
+                        </div>
+                        <div class="iframe-container h-full w-full z-10">
+                            <iframe id="previewIframe" src="" allow="autoplay; fullscreen"></iframe>
+                        </div>
+                        <div id="errorOverlay" class="hidden absolute inset-0 z-20 bg-white dark:bg-slate-900 flex flex-col items-center justify-center text-center p-6">
+                            <i class="fa-solid fa-triangle-exclamation text-4xl text-amber-500 mb-4"></i>
+                            <p class="text-lg font-semibold text-slate-800 dark:text-white mb-2">Arquivo não disponível para visualização</p>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 max-w-md mb-6">O ID do arquivo parece incorreto ou as permissões de acesso não são públicas.</p>
+                            <a id="errorDownloadLink" href="#" target="_blank" class="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition">
+                                Tentar Download Direto
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-gray-50 dark:bg-slate-800/30 border-t border-gray-200 dark:border-slate-700 flex justify-end flex-shrink-0">
+                        <a id="modalDownloadBtn" href="#" target="_blank" class="inline-flex justify-center items-center rounded-xl bg-cyan-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/30 hover:bg-cyan-500 transition gap-2">
+                            <i class="fa-solid fa-cloud-arrow-down"></i> 
+                            <span>Baixar Arquivo</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURAÇÃO DE TEMA ---
+        const html = document.documentElement;
+        const themeIcon = document.getElementById('themeIcon');
+
+        function toggleTheme() {
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                themeIcon.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                themeIcon.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        if (localStorage.getItem('theme') === 'dark') {
+            html.classList.add('dark');
+            themeIcon.classList.replace('fa-moon', 'fa-sun');
+        } else {
+            html.classList.remove('dark');
+        }
+
+        // --- DADOS COMPLETOS ---
+        const resources = [
+            // --- 1. Correntes Filosóficas (E-books) ---
+            { id: 1, title: "Cyberpunk", category: "Correntes Filosóficas", type: "ebook", date: "2024", size: "2.0 MB", driveId: "1-69zSGw-CvKMXx0IAURSDzLgsUWZM1E7", description: "Alta tecnologia e baixa qualidade de vida: distopias e futuros." },
+            { id: 2, title: "Tecnofeminismo", category: "Correntes Filosóficas", type: "ebook", date: "2024", size: "1.7 MB", driveId: "1kFDvYe5dBRn9zVlosFJnJK0Pepmq9J30", description: "Interseções entre tecnologia e gênero." },
+            { id: 3, title: "Anarquismo Digital", category: "Correntes Filosóficas", type: "ebook", date: "2024", size: "1.8 MB", driveId: "1P-FTCm6Osx8X2NTsOGoEi3w2HGUvBQ9q", description: "Autonomia e descentralização na rede." },
+            { id: 4, title: "Tecnogaianismo", category: "Correntes Filosóficas", type: "ebook", date: "2024", size: "1.6 MB", driveId: "1DeBdjmhk_JDypwNQ6BBzmAy0R7QyDY8p", description: "Tecnologia para restauração ecológica." },
+            { id: 5, title: "Neo-Ludismo", category: "Correntes Filosóficas", type: "ebook", date: "2024", size: "1.5 MB", driveId: "1OoIGap1zUC2-PhOKPqiqnZ5nIbD80kB7", description: "Crítica à dependência tecnológica moderna." },
+            { id: 6, title: "Biohacking", category: "Correntes Filosóficas", type: "ebook", date: "2024", size: "2.1 MB", driveId: "1843U4GDoDdNvxCVwTLzg_dUN-OtOoSov", description: "A revolução da auto-otimização biológica." },
+            { id: 7, title: "Transumanismo", category: "Correntes Filosóficas", type: "ebook", date: "2024", size: "2.2 MB", driveId: "1DRxvbM_lep2CVq6ytXCNn165oVZndmeT", description: "Superando limites biológicos com tecnologia." },
+            { id: 8, title: "Cypherpunk", category: "Correntes Filosóficas", type: "ebook", date: "2024", size: "1.7 MB", driveId: "1-Z6juEJ0bahbu7q_o0GX_44oDWa2Q3Ci", description: "Privacidade e criptografia como liberdade." },
+            { id: 9, title: "Ludologia", category: "Correntes Filosóficas", type: "ebook", date: "2024", size: "1.9 MB", driveId: "10VyXNfGzTZnd36ep_lCmFRp6t-744D44", description: "Estudo dos jogos e suas mecânicas." },
+            { id: 10, title: "Nootrópicos", category: "Correntes Filosóficas", type: "ebook", date: "2024", size: "1.6 MB", driveId: "1Ze0onK664DnSVdrHJ369EvlzHEODjYf0", description: "Potencialização cognitiva e foco." },
+            { id: 11, title: "Dataismo", category: "Correntes Filosóficas", type: "ebook", date: "2024", size: "1.8 MB", driveId: "1UuSGPgqxn4eRfmZAvzVEUdDtGBon8OI-", description: "O fluxo de dados como valor supremo." },
+            { id: 12, title: "Singularidade Tecnológica", category: "Correntes Filosóficas", type: "ebook", date: "2024", size: "2.3 MB", driveId: "1wUBC1Bz3POFiGQkstFwSJijFn0jlBZqa", description: "O ponto de inflexão da inteligência artificial." },
+            { id: 13, title: "Tecnoautoritarismo", category: "Correntes Filosóficas", type: "ebook", date: "2024", size: "1.9 MB", driveId: "1u23GiSJok3yiOtA6d71TIPA3cUj55xUG", description: "Controle social através da tecnologia." },
+            { id: 14, title: "Cibernética", category: "Correntes Filosóficas", type: "ebook", date: "2024", size: "1.5 MB", driveId: "1w32lOSIH_vHz7f9-1Pzq3_vwaW-NGHJN", description: "Sistemas de controle e comunicação." },
+
+            // --- 2. Tecnologias Quânticas (E-books) ---
+            { id: 15, title: "Internet Quântica", category: "Tecnologias Quânticas", type: "ebook", date: "2024", size: "2.0 MB", driveId: "10WXlHerXT26FFzhG6_SMr8Fg-p4kuRLJ", description: "Conectividade segura via entrelaçamento." },
+            { id: 16, title: "Cloud Quântica", category: "Tecnologias Quânticas", type: "ebook", date: "2024", size: "1.8 MB", driveId: "10pLM1-ZFZXpjiOgbBlT3iTT0eOsGspCn", description: "Acesso remoto a processadores quânticos." },
+            { id: 17, title: "Criptografia Quântica", category: "Tecnologias Quânticas", type: "ebook", date: "2024", size: "1.9 MB", driveId: "1y_YLgnQ2h2bUIsaRNmEnqlISEBWbAdva", description: "Segurança inquebrável na era pós-quântica." },
+            { id: 18, title: "Computação Quântica", category: "Tecnologias Quânticas", type: "ebook", date: "2024", size: "2.4 MB", driveId: "15WMM2gB4SBEdRsRhRAR99m4l824NssTn", description: "Fundamentos do hardware quântico." },
+            { id: 19, title: "Inteligência Artificial Quântica", category: "Tecnologias Quânticas", type: "ebook", date: "2024", size: "2.1 MB", driveId: "1eQfMe0RZaF1pBqacooQ1T-V2_7MVZBnj", description: "Algoritmos e aprendizado de máquina quântico." },
+
+            // --- 3. Patologias Tecnológicas (E-books) ---
+            { id: 20, title: "Ansiedade e Estresse", category: "Patologias Tecnológicas", type: "ebook", date: "2024", size: "1.7 MB", driveId: "1EwfZJMVh7KItLjHX0rTlNuowNDFreK0e", description: "Impactos da tecnologia na saúde mental." },
+            { id: 21, title: "Dependência Tecnológica", category: "Patologias Tecnológicas", type: "ebook", date: "2024", size: "2.0 MB", driveId: "1SpiRo9Jnu4L-LrCLhkb1b59mLAYrVXX7", description: "Vício digital e mecanismos de controle." },
+            { id: 22, title: "Despersonalização e Isolamento", category: "Patologias Tecnológicas", type: "ebook", date: "2024", size: "1.8 MB", driveId: "198tUOwjeMvwmDHpsY0GMoADAG82FMeGa", description: "O impacto social da vida online." },
+            { id: 23, title: "Distúrbios Auditivos", category: "Patologias Tecnológicas", type: "ebook", date: "2024", size: "1.5 MB", driveId: "1-8cQYwWEOI_bs9tsV3KG_wjzzhoDAmRQ", description: "Efeitos do uso excessivo de fones." },
+            { id: 24, title: "Distúrbios do Sono", category: "Patologias Tecnológicas", type: "ebook", date: "2024", size: "1.6 MB", driveId: "1Gtzf0URHlkbSIVQ7JpsGH1FbOiwazOHT", description: "Luz azul e ritmo circadiano." },
+            { id: 25, title: "Distúrbios Visuais", category: "Patologias Tecnológicas", type: "ebook", date: "2024", size: "1.7 MB", driveId: "1pFkt3RwSvOcGHBUwjfoTgKbAjKKzg9DT", description: "Fadiga ocular digital." },
+            { id: 26, title: "Dores de Cabeça e Tensão", category: "Patologias Tecnológicas", type: "ebook", date: "2024", size: "1.6 MB", driveId: "14b_n5fySZPkSe9Ra_zGwdgCxvgeq_KLS", description: "Problemas físicos do uso de telas." },
+            { id: 27, title: "Estresse Pós-Traumático", category: "Patologias Tecnológicas", type: "ebook", date: "2024", size: "1.8 MB", driveId: "1YpXDNcNnube8oYAYiBA_53C8EaSA2Bmp", description: "Traumas digitais e cyberbullying." },
+            { id: 28, title: "Lesão por Esforço Repetitivo", category: "Patologias Tecnológicas", type: "ebook", date: "2024", size: "1.9 MB", driveId: "1xmMduwtG6UEoT1JVjnBHa9JcEgYJUUWW", description: "Ergonomia e saúde física." },
+            { id: 29, title: "Problemas de Aprendizado", category: "Patologias Tecnológicas", type: "ebook", date: "2024", size: "1.7 MB", driveId: "1og-QQzEBKmYY_EBqRncV1NzYpZqxnnwm", description: "Foco e cognição na era digital." },
+            { id: 30, title: "Problemas de Comunicação", category: "Patologias Tecnológicas", type: "ebook", date: "2024", size: "1.8 MB", driveId: "1nkBXcPwsIrWvoq8B5ilisoLEPmoWeH4O", description: "Interação social mediada por telas." },
+            { id: 31, title: "Problemas de Memória", category: "Patologias Tecnológicas", type: "ebook", date: "2024", size: "1.6 MB", driveId: "18i2oh4lTJM_J4gp_DravDU1YlRlgk2y5", description: "Amnésia digital e terceirização cognitiva." },
+            { id: 32, title: "Síndrome de Burnout Digital", category: "Patologias Tecnológicas", type: "ebook", date: "2024", size: "1.9 MB", driveId: "1GjeaG-y1gmwbfiA13WKvtup6HM9wgfLq", description: "Exaustão por hiperconectividade." },
+            { id: 33, title: "Fadiga Crônica", category: "Patologias Tecnológicas", type: "ebook", date: "2024", size: "1.8 MB", driveId: "1tCMdHY2m7cSJ-frle7xkE47SBP2VHc0B", description: "Cansaço persistente e tecnologia." },
+            { id: 34, title: "Cansaço Tecnológico", category: "Patologias Tecnológicas", type: "ebook", date: "2024", size: "1.7 MB", driveId: "16LUgUc0lU-MWXz9DLPgRrscscPmkd-B2", description: "Saturação de informação." },
+            { id: 35, title: "Transtorno da Atenção", category: "Patologias Tecnológicas", type: "ebook", date: "2024", size: "1.8 MB", driveId: "1TLiqBcqysJ_2dP8t6w2IdDegV5HCj-Eb", description: "Fragmentação da atenção." },
+
+            // --- 4. Slides de Aula ---
+            // Marketing & Estratégia
+            { id: 40, title: "Estratégia Integrada Instagram", category: "Marketing & Estratégia", type: "slide", date: "2025", size: "3.2 MB", driveId: "1F790ldtyGE41gz4H1DGGXjyzdVY3ZbMz", description: "Vendas para Instagram e Redes Sociais." },
+            
+            // Mídia Sintética & IA
+            { id: 41, title: "Mídia Sintética", category: "Inteligência Artificial & Mídia", type: "slide", date: "2025", size: "4.1 MB", driveId: "1dw_B8m68A8HYIR_L-v4CWFQnvTpVAI_D", description: "O futuro da criação de conteúdo artificial." },
+            { id: 42, title: "Da Hiper Realidade à Realidade Sintética", category: "Inteligência Artificial & Mídia", type: "slide", date: "2025", size: "5.0 MB", driveId: "1r6MbQC9kC3tX8O3s-ZLJGzghCdEzs3e_", description: "A evolução da percepção digital." },
+
+            // Dados & Infraestrutura
+            { id: 43, title: "Data Fabric", category: "Dados & Infraestrutura", type: "slide", date: "2025", size: "2.8 MB", driveId: "1ohxk4LohARkdV08BCyBpiHA3lolAQkJY", description: "A malha inteligente por trás da nova era dos dados." },
+            { id: 44, title: "A Explosão dos Servidores", category: "Dados & Infraestrutura", type: "slide", date: "2025", size: "3.5 MB", driveId: "18MLw_Yf-y3nhz7n3vEsqEycAfPADuWsT", description: "Infraestrutura crítica e demanda computacional." },
+
+            // Riscos Globais & Sistemas Complexos
+            { id: 45, title: "Modelagem Climática com IA", category: "Riscos Globais & Sistemas Complexos", type: "slide", date: "2025", size: "4.2 MB", driveId: "1VEsVZW4tvy2poanPQAdZJU_XaEasDjA-", description: "O aliado inesperado da previsão global." },
+            { id: 46, title: "Eventos de Cauda Extrema", category: "Riscos Globais & Sistemas Complexos", type: "slide", date: "2025", size: "3.0 MB", driveId: "1HDjE5SFBU3EKRnhJi8itZdutFfNxb5LC", description: "Reconfiguração inesperada de sistemas complexos." },
+            { id: 47, title: "Grandes Fracassos Tecnológicos", category: "Riscos Globais & Sistemas Complexos", type: "slide", date: "2025", size: "3.8 MB", driveId: "1UolI_lrBdalVqs3j7F1uBwfSPpqPR_C1", description: "Uma análise completa de falhas sistêmicas." },
+            { id: 48, title: "Manipulação Climática", category: "Riscos Globais & Sistemas Complexos", type: "slide", date: "2025", size: "2.9 MB", driveId: "18GoPJ7Ah0wEZeGWZLwxiKCxFiw8v_IzY", description: "Tecnologia oculta, estrutura global e riscos." },
+            { id: 49, title: "Ruptura Sistêmica", category: "Riscos Globais & Sistemas Complexos", type: "slide", date: "2025", size: "3.1 MB", driveId: "1gofCfG9jAmYs08PE4HudyYWWnzUOjFfl", description: "Inteligência estratégica em tempos de crise." }
+        ];
+
+        // --- FILTROS & BUSCA & ESTADO ---
+        let currentFilter = 'all';
+        let currentSearch = '';
+        
+        let expandedState = {
+            ebook: false,
+            slide: false
+        };
+
+        const listContainer = document.getElementById('resourcesList');
+        const emptyState = document.getElementById('emptyState');
+
+        // Ordem de categorias
+        const categoryOrder = {
+            "Correntes Filosóficas": 1,
+            "Tecnologias Quânticas": 2,
+            "Patologias Tecnológicas": 3,
+            "Marketing & Estratégia": 4,
+            "Inteligência Artificial & Mídia": 5,
+            "Dados & Infraestrutura": 6,
+            "Riscos Globais & Sistemas Complexos": 7
+        };
+
+        function filterResources(type) {
+            currentFilter = type;
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('border-cyan-500', 'text-cyan-600', 'dark:text-cyan-400');
+                btn.classList.add('border-transparent', 'text-slate-500', 'hover:text-slate-700');
+                if(btn.onclick.toString().includes(`'${type}'`)) {
+                    btn.classList.remove('border-transparent', 'text-slate-500');
+                    btn.classList.add('border-cyan-500', 'text-cyan-600', 'dark:text-cyan-400');
+                }
+            });
+
+            applyLogic();
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            currentSearch = e.target.value.toLowerCase();
+            applyLogic();
+        });
+
+        function toggleExpand(type) {
+            expandedState[type] = !expandedState[type];
+            applyLogic();
+        }
+
+        function getIconStyle(type) {
+            switch(type) {
+                case 'ebook': return { colorClass: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400', icon: 'fa-book-open' };
+                case 'slide': return { colorClass: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400', icon: 'fa-presentation-screen' };
+                default: return { colorClass: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400', icon: 'fa-file' };
+            }
+        }
+
+        function createItemRow(item) {
+            const style = getIconStyle(item.type);
+            return `
+                <div class="group list-item-hover bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-4 md:p-0 md:h-20 flex flex-col md:grid md:grid-cols-12 gap-3 md:gap-4 items-start md:items-center shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden relative">
+                    <div class="absolute left-0 top-0 bottom-0 w-1.5 ${style.colorClass.split(' ')[0].replace('/30','')} md:w-1"></div>
+                    
+                    <div class="w-full md:col-span-7 flex items-start md:items-center gap-3 md:gap-4 pl-2 md:pl-6">
+                        <div class="flex-shrink-0 h-10 w-10 md:h-12 md:w-12 rounded-lg ${style.colorClass} flex items-center justify-center text-lg shadow-sm">
+                            <i class="fa-solid ${style.icon}"></i>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <h3 class="text-base font-semibold text-slate-900 dark:text-white truncate leading-tight mb-0.5">${item.title}</h3>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 md:truncate leading-snug">${item.description}</p>
+                        </div>
+                    </div>
+
+                    <div class="w-full md:col-span-3 flex md:flex-col md:justify-center text-xs md:text-sm text-slate-500 dark:text-slate-400 gap-4 md:gap-0 pl-2 md:pl-0 mt-1 md:mt-0 border-t md:border-none border-gray-100 dark:border-slate-700/50 pt-3 md:pt-0">
+                        <div class="flex items-center"><i class="fa-regular fa-calendar mr-1.5 md:hidden text-slate-400"></i> ${item.date}</div>
+                        <div class="flex items-center md:text-xs md:opacity-70"><i class="fa-regular fa-hdd mr-1.5 md:hidden text-slate-400"></i> ${item.size}</div>
+                    </div>
+
+                    <div class="w-full md:col-span-2 flex items-center justify-end gap-2 md:pr-6 mt-2 md:mt-0">
+                        <button onclick="openPreview('${item.driveId}', '${item.title}')" class="flex-1 md:flex-none h-10 md:h-9 px-3 rounded-lg border border-gray-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 hover:text-cyan-600 dark:hover:text-cyan-400 transition flex items-center justify-center gap-2 text-sm font-medium">
+                            <i class="fa-regular fa-eye"></i> <span class="md:hidden">Ver</span>
+                        </button>
+                        <a href="https://drive.google.com/uc?export=download&id=${item.driveId}" target="_blank" class="flex-1 md:flex-none h-10 md:h-9 px-3 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white transition flex items-center justify-center gap-2 text-sm font-medium shadow-sm shadow-cyan-500/20">
+                            <i class="fa-solid fa-download"></i> <span class="md:hidden">Baixar</span>
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        function applyLogic() {
+            listContainer.innerHTML = '';
+            let hasResults = false;
+
+            const filtered = resources.filter(item => {
+                let matchesType = (currentFilter === 'all') ? true : item.type === currentFilter;
+                if (currentFilter === 'ebook' && item.type === 'pdf') matchesType = true;
+
+                const matchesSearch = item.title.toLowerCase().includes(currentSearch) || 
+                                      item.description.toLowerCase().includes(currentSearch) ||
+                                      item.category.toLowerCase().includes(currentSearch);
+                return matchesType && matchesSearch;
+            });
+
+            // Lógica Principal de Exibição
+            if (filtered.length > 0) {
+                // 1. Se estiver na busca (independente da aba), mostra lista plana
+                if(currentSearch !== '') {
+                     renderFlatList(filtered);
+                } 
+                // 2. Se for "Todos" (sem busca)
+                else if (currentFilter === 'all') {
+                    renderAllView();
+                } 
+                // 3. Se for aba específica (e-Book ou Slide) -> ACORDEÃO
+                else {
+                    renderAccordionList(filtered);
+                }
+                hasResults = true;
+            }
+
+            if (!hasResults) {
+                listContainer.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+            } else {
+                listContainer.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+            }
+        }
+
+        // --- RENDERIZADORES ---
+
+        // 1. Lista Plana (para busca)
+        function renderFlatList(data) {
+            data.forEach(item => {
+                const div = document.createElement('div');
+                div.innerHTML = createItemRow(item);
+                listContainer.appendChild(div.firstElementChild);
+            });
+        }
+
+        // 2. Visão "Todos" (Top 2 + Expandir)
+        function renderAllView() {
+            const allEbooks = resources.filter(r => r.type === 'ebook' || r.type === 'pdf');
+            const allSlides = resources.filter(r => r.type === 'slide');
+
+            // Ebooks Section
+            if (allEbooks.length > 0) {
+                createSection('e-Books', 'fa-book-open', 'purple', 'ebook', allEbooks, expandedState.ebook);
+            }
+            // Slides Section
+            if (allSlides.length > 0) {
+                createSection('Slides', 'fa-presentation-screen', 'orange', 'slide', allSlides, expandedState.slide);
+            }
+        }
+
+        function createSection(title, icon, color, typeKey, data, isExpanded) {
+            const section = document.createElement('div');
+            section.className = 'mb-8';
+            section.innerHTML = `
+                <div class="mb-4 flex items-center gap-2">
+                    <span class="bg-${color}-100 text-${color}-600 dark:bg-${color}-900/30 dark:text-${color}-400 p-2 rounded-lg">
+                        <i class="fa-solid ${icon}"></i>
+                    </span>
+                    <h2 class="text-xl font-bold text-slate-800 dark:text-white">${title}</h2>
+                </div>
+                <div class="flex flex-col gap-2 mb-4"></div>
+            `;
+            listContainer.appendChild(section);
+            const container = section.querySelector('.flex-col');
+
+            // Sort categories ONLY if expanded
+            if(isExpanded) {
+                data.sort((a, b) => (categoryOrder[a.category] || 99) - (categoryOrder[b.category] || 99));
+            }
+            
+            const dataToShow = isExpanded ? data : data.slice(0, 2);
+            
+            let lastCategory = '';
+            dataToShow.forEach(item => {
+                if (isExpanded && item.category !== lastCategory) {
+                    const catHeader = document.createElement('div');
+                    catHeader.className = 'mt-4 mb-2 text-sm font-bold text-slate-500 uppercase tracking-wide';
+                    catHeader.innerText = item.category;
+                    container.appendChild(catHeader);
+                    lastCategory = item.category;
+                }
+                const div = document.createElement('div');
+                div.innerHTML = createItemRow(item);
+                container.appendChild(div.firstElementChild);
+            });
+
+            // Toggle Button
+            if (data.length > 2) {
+                const btnDiv = document.createElement('div');
+                btnDiv.className = 'text-center';
+                btnDiv.innerHTML = `
+                    <button onclick="toggleExpand('${typeKey}')" class="text-sm font-medium ${isExpanded ? 'text-slate-500' : 'text-cyan-600'} hover:underline">
+                        ${isExpanded ? 'Recolher lista' : `Ver todos os ${data.length} arquivos`}
+                    </button>
+                `;
+                section.appendChild(btnDiv);
+            }
+        }
+
+        // 3. Visão Acordeão (para abas específicas)
+        function renderAccordionList(data) {
+            // Agrupar dados por categoria
+            const grouped = {};
+            data.forEach(item => {
+                if(!grouped[item.category]) grouped[item.category] = [];
+                grouped[item.category].push(item);
+            });
+
+            // Ordenar categorias
+            const sortedCategories = Object.keys(grouped).sort((a, b) => {
+                return (categoryOrder[a] || 99) - (categoryOrder[b] || 99);
+            });
+
+            sortedCategories.forEach(cat => {
+                const catId = 'cat-' + cat.replace(/\s+/g, '-').toLowerCase().replace(/[^a-z0-9-]/g, '');
+                const items = grouped[cat];
+
+                const accordionHtml = `
+                    <div class="mb-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                        <button onclick="toggleAccordion('${catId}')" class="w-full flex items-center justify-between p-5 text-left bg-gray-50/50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors group">
+                            <div class="flex items-center gap-3">
+                                <div class="h-2 w-2 rounded-full bg-cyan-500"></div>
+                                <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">${cat}</h3>
+                                <span class="text-xs font-medium bg-gray-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full">${items.length}</span>
+                            </div>
+                            <i id="icon-${catId}" class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-300"></i>
+                        </button>
+                        
+                        <div id="${catId}" class="hidden border-t border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 md:p-4 flex flex-col gap-2">
+                            </div>
+                    </div>
+                `;
+                
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = accordionHtml;
+                listContainer.appendChild(wrapper.firstElementChild);
+
+                // Inserir itens dentro do container criado
+                const contentContainer = document.getElementById(catId);
+                items.forEach(item => {
+                    const row = document.createElement('div');
+                    row.innerHTML = createItemRow(item);
+                    contentContainer.appendChild(row.firstElementChild);
+                });
+            });
+        }
+
+        function toggleAccordion(id) {
+            const content = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        // --- MODAL ---
+        const modal = document.getElementById('previewModal');
+        const iframe = document.getElementById('previewIframe');
+        const modalTitle = document.getElementById('modalFileName');
+        const modalDownload = document.getElementById('modalDownloadBtn');
+        const errorOverlay = document.getElementById('errorOverlay');
+        const errorDownloadLink = document.getElementById('errorDownloadLink');
+
+        function openPreview(driveId, title) {
+            modalTitle.innerText = title;
+            errorOverlay.classList.add('hidden');
+            iframe.src = ''; 
+
+            if(driveId.startsWith('FILE_ID_') || !driveId) {
+                errorOverlay.classList.remove('hidden');
+                errorDownloadLink.href = "#";
+                modalDownload.href = "#";
+            } else {
+                const previewUrl = `https://drive.google.com/file/d/${driveId}/preview`;
+                const downloadUrl = `https://drive.google.com/uc?export=download&id=${driveId}`;
+                
+                iframe.src = previewUrl;
+                modalDownload.href = downloadUrl;
+                errorDownloadLink.href = downloadUrl;
+            }
+            
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            iframe.src = '';
+            document.body.style.overflow = 'auto';
+        }
+
+        document.addEventListener('keydown', (e) => { if (e.key === "Escape") closeModal(); });
+
+        // Init
+        applyLogic();
+    </script>
+</body>
+</html>
